@@ -212,6 +212,12 @@ public class demo2_Student {
                     case "5" : service.printAll(); break;
                     case "6" : service.printStatistics();break;
                     case "7" : service.saveToFile(DATA_FILE);break;
+                    case "0" :
+                        service.saveToFile(DATA_FILE);
+                        System.out.printf("数据已保存，程序结束");
+                        return;
+                    default:
+                        System.out.println("选项无效");
                 }
             }
         }

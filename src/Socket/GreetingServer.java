@@ -17,6 +17,8 @@ public class GreetingServer extends Thread {
             System.out.println("客户端A已连接"+ client1.getRemoteSocketAddress());
             Socket client2 = serverSocket.accept();
             System.out.println("客户端B已连接"+ client2.getRemoteSocketAddress());
+            serverSocket.close();
+            System.out.println("已满员");
             //线程A
             new Thread(()->{
                 try {

@@ -1,10 +1,8 @@
 package Contact;
 
-import javax.xml.ws.Service;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.NotActiveException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,14 +81,14 @@ public class demo2_Student {
             System.out.printf("\"人数：%d%n平均分：%.2f%n最高分：%s%n最低分：%s%n\"",total / studentMap.size(),highest,lowest);
         }
         void loadFromFile(Path path){
-            if (Files.exists(path)) return;
+            if (!Files.exists(path)) return;
             try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8);){
                 String line;
                 int lineNumber = 0;
                 while ((line = reader.readLine()) != null){
                     lineNumber++;
                     if (lineNumber == 1 && line.equals("id,name,score")) continue;
-                    String[] parts = line.split(",", 1);
+                    String[] parts = line.split(",", -1);
                     if (parts.length != 3) continue;
                     try {
                         int id = Integer.parseInt(parts[0].trim());
@@ -128,7 +126,7 @@ public class demo2_Student {
 
     private static void addStudent(Scanner scanner, StudentService service){
         int id = readPositiveInt(scanner, "请输入学号");
-        if (service.contains(id)) throw new IllegalStateException("该学号已经存在");
+        if (service.contains(id)) System.out.println("该学员已经存在");
         String name = readNonEmptyText(scanner, "请输入姓名：");
         double score = readScore(scanner,"请输入成绩 0~100：");
         service.add(new Student(id,name,score));
@@ -187,15 +185,7 @@ public class demo2_Student {
     }
     private static void printMenu(){
         System.out.println("\n===== 学生成绩管理系统 =====");
-        System.out.println("1. 新增学生");
-        System.out.println("2. 删除学生");
-        System.out.println("3. 修改学生成绩");
-        System.out.println("4. 按学号查询");
-        System.out.println("5. 查看全部学生（按成绩降序）");
-        System.out.println("6. 成绩统计");
-        System.out.println("7. 手动保存");
-        System.out.println("0. 保存并退出");
-        System.out.print("请选择：");
+        System.out.print("1. 新增学生\n2. 删除学生\n3. 修改学生成绩\n4. 按学号查询\n5. 查看全部学生（按成绩降序）\n6. 成绩统计\n7. 手动保存\n0. 保存并退出\n请选择：");
     }
     public static void main(String[] args){
         StudentService service = new StudentService();

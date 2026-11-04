@@ -37,6 +37,7 @@ public class demo3_LibraryBorrowingSystem {
     }
     private static void addBook(Scanner scanner,LibraryService library){
         int id = readPositiveInt(scanner, "请输入图书编号:");
+        if (library.containsBook(id)) throw new IllegalArgumentException("图书编号已存在");
         String keyword = readText(scanner, "请输入图书标题");
         String author = readText(scanner, "请输入作者:");
         library.addBook(new Book(id,keyword,author));
@@ -177,13 +178,15 @@ public class demo3_LibraryBorrowingSystem {
     static class LibraryService{
         private final Map<Integer,Book> books = new LinkedHashMap<>();
         private final Map<Integer,User> users = new LinkedHashMap<>();
+        boolean containsBook(int id){
+            return books.containsKey(id);
+        }
         void addBook(Book book){
-            if (books.containsKey(book.getId())) throw new IllegalArgumentException("图书编号已存在");
             books.put(book.getId(), book);
         }
 
         public void addUser(User user) {
-            if (!users.containsKey(user.getId())) throw new IllegalArgumentException("用户编号已存在");
+            if (users.containsKey(user.getId())) throw new IllegalArgumentException("用户编号已存在");
             users.put(user.getId(), user);
         }
 

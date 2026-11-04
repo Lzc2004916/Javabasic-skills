@@ -149,14 +149,14 @@ public class TodoManger {
             }
         }
 
-        public List<Task> sortedTasks() {
-            ArrayList<Task> result = new ArrayList<>(tasks.values());
-            result.sort(
-                    Comparator.comparing((Task t) -> t.getStatus() == TaskStatus.DOME)
-                    .thenComparing(Comparator.comparingInt((Task t) -> t.getPriority().getRank()).reversed())
-                            .thenComparing(t -> t.getDueDate(), Comparator.nullsLast(Comparator.naturalOrder()))
-                            .thenComparing(Task :: getId));
-        }
+//        public List<Task> sortedTasks() {
+//            ArrayList<Task> result = new ArrayList<>(tasks.values());
+//            result.sort(
+//                    Comparator.comparing((Task t) -> t.getStatus() == TaskStatus.DOME)
+//                    .thenComparing(Comparator.comparingInt((Task t) -> t.getPriority().getRank()).reversed())
+//                            .thenComparing(t -> t.getDueDate(), Comparator.nullsLast(Comparator.naturalOrder()))
+//                            .thenComparing(Task :: getId));
+//        }
     }
 
     private static void printMenu() {
@@ -180,25 +180,25 @@ public class TodoManger {
             while (true){
                 printMenu();
                 String choice = scanner.nextLine().trim();
-                try {
-                    switch (choice){
-                        case "1": addTask(scanner,todoService); break;
-                        case "2": completeTask(scanner,todoService);break;
-                        case "3": deleteTask(scanner, todoService); break;
-                        case "4": todoService.printTasks(todoService.sortedTasks()); break;
-                        case "5": todoService.printTasks(todoService.pendingTasks()); break;
-                        case "6": searchTasks(scanner, todoService); break;
-                        case "7": todoService.printStatistics(); break;
-                        case "8": todoService.saveToFile(DATA_FILE); break;
-                        case "0":
-                            todoService.saveToFile(DATA_FILE);
-                            System.out.println("数据已保存，程序结束。");
-                            return;
-                        default: System.out.println("选项无效，请输入 0 到 8。");
-                    }
-                }catch (IllegalArgumentException | IllegalStateException e){
-                    System.out.println("操作失败：" + e.getMessage());
-                }
+//                try {
+//                    switch (choice){
+//                        case "1": addTask(scanner,todoService); break;
+//                        case "2": completeTask(scanner,todoService);break;
+//                        case "3": deleteTask(scanner, todoService); break;
+//                        case "4": todoService.printTasks(todoService.sortedTasks()); break;
+//                        case "5": todoService.printTasks(todoService.pendingTasks()); break;
+//                        case "6": searchTasks(scanner, todoService); break;
+//                        case "7": todoService.printStatistics(); break;
+//                        case "8": todoService.saveToFile(DATA_FILE); break;
+//                        case "0":
+//                            todoService.saveToFile(DATA_FILE);
+//                            System.out.println("数据已保存，程序结束。");
+//                            return;
+//                        default: System.out.println("选项无效，请输入 0 到 8。");
+//                    }
+//                }catch (IllegalArgumentException | IllegalStateException e){
+//                    System.out.println("操作失败：" + e.getMessage());
+//                }
             }
         }
     }

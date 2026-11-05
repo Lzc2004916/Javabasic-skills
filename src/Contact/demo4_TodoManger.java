@@ -8,8 +8,9 @@ import java.nio.file.Paths;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class TodoManger {
+public class demo4_TodoManger {
     private static final Path DATA_FILE = Paths.get("todo_tasks.csv");
 
     enum Priority {
@@ -148,17 +149,71 @@ public class TodoManger {
                 System.out.println("读取数据文件失败");
             }
         }
+        public void saveToFile(Path path) {
+            try (BufferedWriter bufferedWriter = Files.newBufferedWriter(path,StandardCharsets.UTF_8);){
+                bufferedWriter.write("id,title,description,priority,status,dueDate");
+                bufferedWriter.newLine();
+                for (Task task : tasks.values()) {
+                    bufferedWriter.write(task.getId() + "," + task.getTitle()
+                            + "," + task.getDescription()
+                            + "," + task.getPriority().name()
+                            + "," + task.getStatus().name()
+                            + "," + (task.getDueDate() == null ? "" : task.getDueDate())
+                    );
+                }
+                System.out.println("数据已保存至——" + path.toAbsolutePath());
+            }catch (IOException e){
+                System.out.println("保存数据文件失败：" + e.getMessage());
+            }
+        }
+        void printTasks(List<Task> tasks){
+            if (tasks.isEmpty()){
+                System.out.println("没有符合条件的任务");
+                return;
+            }
+            System.out.println("\n--- 任务列表 ---");
+            for (Task task : tasks) {
+                System.out.println(task);
+            }
+        }
+        public List<Task> sortedTasks() {
+            ArrayList<Task> result = new ArrayList<>(tasks.values());
+            result.sort(
+                    Comparator.comparing((Task t) -> t.getStatus() == TaskStatus.DOME)
+                    .thenComparing(Comparator.comparingInt((Task t) -> t.getPriority().getRank()).reversed())
+                            .thenComparing(t -> t.getDueDate(), Comparator.nullsLast(Comparator.naturalOrder()))
+                            .thenComparing(Task :: getId));
+            return result;
+        }
+        public List<Task> pendingTasks(){
+            ArrayList<Task> result = new ArrayList<>(tasks.values());
+            return result.stream().filter(t -> t.getStatus() == TaskStatus.PENDING).collect(Collectors.toList());
+        }
 
-//        public List<Task> sortedTasks() {
-//            ArrayList<Task> result = new ArrayList<>(tasks.values());
-//            result.sort(
-//                    Comparator.comparing((Task t) -> t.getStatus() == TaskStatus.DOME)
-//                    .thenComparing(Comparator.comparingInt((Task t) -> t.getPriority().getRank()).reversed())
-//                            .thenComparing(t -> t.getDueDate(), Comparator.nullsLast(Comparator.naturalOrder()))
-//                            .thenComparing(Task :: getId));
-//        }
+        public List<Task> search(String keyword) {
+            String lowerCase = keyword.toLowerCase(Locale.ROOT);
+            ArrayList<Task> result = new ArrayList<>();
+            for (Task task : sortedTasks()) {
+                if (task.getTitle().toLowerCase(Locale.ROOT).contains(lowerCase)
+                        || task.getDescription().toLowerCase(Locale.ROOT).contains(lowerCase)){
+                    result.add(task);
+                }
+            }
+            return result;
+        }
+
+        public void printStatistics() {
+            int pending = 0;
+            int done = 0;
+            for (Task value : tasks.values()) {
+                if (value.getStatus() == TaskStatus.PENDING)pending++;
+                else done++;
+            }
+            System.out.printf("任务总数：%d%n未完成：%d%n已完成：%d%n", tasks.size(), pending, done);
+        }
+
+
     }
-
     private static void printMenu() {
         System.out.println("\n===== 待办事项管理系统 =====");
         System.out.println("1. 新增待办");
@@ -180,25 +235,25 @@ public class TodoManger {
             while (true){
                 printMenu();
                 String choice = scanner.nextLine().trim();
-//                try {
-//                    switch (choice){
-//                        case "1": addTask(scanner,todoService); break;
-//                        case "2": completeTask(scanner,todoService);break;
-//                        case "3": deleteTask(scanner, todoService); break;
-//                        case "4": todoService.printTasks(todoService.sortedTasks()); break;
-//                        case "5": todoService.printTasks(todoService.pendingTasks()); break;
-//                        case "6": searchTasks(scanner, todoService); break;
-//                        case "7": todoService.printStatistics(); break;
-//                        case "8": todoService.saveToFile(DATA_FILE); break;
-//                        case "0":
-//                            todoService.saveToFile(DATA_FILE);
-//                            System.out.println("数据已保存，程序结束。");
-//                            return;
-//                        default: System.out.println("选项无效，请输入 0 到 8。");
-//                    }
-//                }catch (IllegalArgumentException | IllegalStateException e){
-//                    System.out.println("操作失败：" + e.getMessage());
-//                }
+                try {
+                    switch (choice){
+                        case "1": addTask(scanner,todoService); break;
+                        case "2": completeTask(scanner,todoService);break;
+                        case "3": deleteTask(scanner, todoService); break;
+                        case "4": todoService.printTasks(todoService.sortedTasks()); break;
+                        case "5": todoService.printTasks(todoService.pendingTasks()); break;
+                        case "6": searchTasks(scanner, todoService); break;
+                        case "7": todoService.printStatistics(); break;
+                        case "8": todoService.saveToFile(DATA_FILE); break;
+                        case "0":
+                            todoService.saveToFile(DATA_FILE);
+                            System.out.println("数据已保存，程序结束。");
+                            return;
+                        default: System.out.println("选项无效，请输入 0 到 8。");
+                    }
+                }catch (IllegalArgumentException | IllegalStateException e){
+                    System.out.println("操作失败：" + e.getMessage());
+                }
             }
         }
     }
@@ -220,6 +275,10 @@ public class TodoManger {
         int readPositiveInt = readPositiveInt(scanner,"请输入要删除的任务编号");
         String delete = todoService.delete(readPositiveInt);
         System.out.println(delete + "已删除");
+    }
+    private static void searchTasks(Scanner sc, TodoService todoService){
+        String keyword = readText(sc, "请输入搜索关键词");
+        todoService.printTasks(todoService.search(keyword));
     }
     private static Priority readPriority(Scanner scanner){
         while (true){

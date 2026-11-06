@@ -29,7 +29,9 @@ public class demo5 {
                 startGate.await();
                 return ticketOffice.purchase(request);
             });
+            futures.add(future);
         }
+        return null;
     }
     private  static List<PurchaseRequest> readRequests(Scanner scanner,int requestCount){
         ArrayList<PurchaseRequest> request = new ArrayList<>();

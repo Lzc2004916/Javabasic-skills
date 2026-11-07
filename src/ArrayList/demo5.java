@@ -3,10 +3,7 @@ package ArrayList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class demo5 {
     public static void main(String[] args) {
@@ -16,7 +13,12 @@ public class demo5 {
             int requestCount = readPositiveInt(sc, "请输入购票请求数量：");
             List<PurchaseRequest> requests = readRequests(sc, requestCount);
             TicketOffice ticketOffice = new TicketOffice(totalTickets);
-            List<PurchaseResult> purchaseResults = executeRequests(ticketOffice, requests);
+            List<PurchaseResult> results = executeRequests(ticketOffice, requests);
+            System.out.println("\n抢票结果");
+            for (PurchaseResult result : results) {
+                System.out.println(result);
+            }
+            printSummary(ticketOffice,results);
         }
     }
     private static List<PurchaseResult> executeRequests(TicketOffice ticketOffice,List<PurchaseRequest> requests){
@@ -31,7 +33,36 @@ public class demo5 {
             });
             futures.add(future);
         }
-        return null;
+        System.out.println("\n所有请求准备完毕，开始抢票");
+        startGate.countDown();
+        executor.shutdown();
+        ArrayList<PurchaseResult> results = new ArrayList<>();
+        for (Future<PurchaseResult> future : futures) {
+            try {
+                results.add(future.get());
+            }catch (InterruptedException e){
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("等待抢票结果时，主进程被中断");
+            } catch (ExecutionException e) {
+                throw new IllegalStateException("处理抢票请求时发生错误." + e.getCause());
+            }
+        }
+        return results;
+    }
+    private static void printSummary(TicketOffice ticketOffice, List<PurchaseResult> results) {
+        int successfulOrders = 0;
+        int failedOrders = 0;
+        for (PurchaseResult result : results) {
+            if (result.isSuccess()) successfulOrders++;
+            else failedOrders++;
+        }
+        System.out.println("\n===== 最终统计 =====");
+        System.out.println("初始票数：" + ticketOffice.getInitialTickets());
+        System.out.println("已售票数：" + ticketOffice.getSoldTickets());
+        System.out.println("剩余票数：" + ticketOffice.getRemainingTickets());
+        System.out.println("成功订单：" + successfulOrders);
+        System.out.println("失败订单：" + failedOrders);
+        System.out.println("库存校验：" + (ticketOffice.getSoldTickets() + ticketOffice.getRemainingTickets() == ticketOffice.getInitialTickets() ? "通过" : "失败"));
     }
     private  static List<PurchaseRequest> readRequests(Scanner scanner,int requestCount){
         ArrayList<PurchaseRequest> request = new ArrayList<>();
